@@ -67,7 +67,7 @@ class Player(pygame.sprite.Sprite):
 		if self.rect.left < 0:
 			self.rect.left = 0
 
-		# La vitesse est remise Ã  0 Ã  chaque frame, sauf si on appuie sur la flÃ¨che gauche ou la flÃ¨che droite
+		# Haut en bas
 		self.speedY = 0
 		if keys_pressed[pygame.K_UP]:
 			self.speedY = -5
@@ -83,6 +83,30 @@ class Player(pygame.sprite.Sprite):
 		if self.rect.top < 0:
 			self.rect.top = 0
 
+class ennemy(pygame.sprite.Sprite):
+	def __init__(self):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = pygame.Surface((15, 15))
+		self.image.fill(RED)
+		self.rect = self.image.get_rect()
+		self.rect.right = random.randrange(1,10)
+		self.rect.top = 0
+		self.speedY = random.randrange(3,5)
+
+	def update(self):
+		pygame.sprite.Sprite.update(self)
+
+		# On bouge le vaisseau en fonction de la vitesse
+		self.rect.y += self.speedY
+
+		# On empÃªche l'ennemy de sortir de l'Ã©cran
+		if self.rect.bottom > HEIGHT:
+			self.rect.top = 0 # remettre l'ennemy en haut
+
+			self.speedY = random.randrange(1, 5)
+
+			self.rect.right = random.randint(1, WIDTH)
+
 
 # On initialise pygame et on crÃ©e la fenÃªtre grÃ¢ce aux variables WIDTH et HEIGHT
 pygame.init()
@@ -96,6 +120,12 @@ all_sprites = pygame.sprite.Group()
 
 # On crÃ©e une instance de la classe Player
 player = Player()
+
+i = 0
+while i < 10:
+	ennemy1 = ennemy()
+	all_sprites.add(ennemy1)
+	i+=1
 # ... et on l'ajoute au groupe de sprites
 all_sprites.add(player)
 
