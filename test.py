@@ -83,6 +83,14 @@ class Player(pygame.sprite.Sprite):
 		if self.rect.top < 0:
 			self.rect.top = 0
 
+	def Shoot(self):
+
+		positionX = self.rect.centerx
+		positionY = self.rect.top
+
+		missile = Missile(positionX, positionY)
+		all_sprites.add(missile)
+
 class ennemy(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
@@ -107,6 +115,23 @@ class ennemy(pygame.sprite.Sprite):
 
 			self.rect.right = random.randint(1, WIDTH)
 
+class Missile(pygame.sprite.Sprite):
+	def __init__(self, positionX, positionY):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = pygame.Surface((10, 20))
+		self.image.fill(BLUE)
+		self.rect = self.image.get_rect()
+		self.rect.centerx = positionX
+		self.rect.bottom = positionY
+		self.speedY = -5
+	def update(self):
+		pygame.sprite.Sprite.update(self)
+
+		# On bouge le vaisseau en fonction de la vitesse
+		self.rect.y += self.speedY
+
+		if self.rect.top > 0:
+			self.kill()
 
 # On initialise pygame et on crÃ©e la fenÃªtre grÃ¢ce aux variables WIDTH et HEIGHT
 pygame.init()
@@ -140,6 +165,9 @@ while running:
 		# Pour fermer la fenÃªtre, on arrÃªte la boucle while
 		if event.type == pygame.QUIT:
 			running = False
+		elif event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_SPACE:
+				player.Shoot()
 
 	# Tous les sprites sont updatÃ©s
 	all_sprites.update()
