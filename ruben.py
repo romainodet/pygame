@@ -55,6 +55,7 @@ class Player(pygame.sprite.Sprite):
 		missile = Missile(positionX, positionY,
 		                  0)  # call the class missile and define it position at the same place of the player, the 0 define a player bullet.
 		all_sprites.add(missile)  # add the bullet to the sprite
+		all_player.add(missile)
 
 	def update(self):
 		pygame.sprite.Sprite.update(self)
@@ -96,12 +97,20 @@ class ennemy(pygame.sprite.Sprite):
 		self.image = pygame.image.load(
 			path.join(assets_dir, "enemy.png")).convert().convert_alpha()  # define the image of the mob
 		self.rect = self.image.get_rect()
-		self.rect.right = math.sin(player.rect.y)  # randomly define the position by sin of the y pos of the player
-		self.rect.top = 0
-		self.speedY = random.randrange(3, 5)  # random define of the vertical speed
+		self.positionx = random.randrange(0, WIDTH - self.rect.width)
+		# On choisit une position x alÃ©atoire entre le cÃ´tÃ© gauche de l'Ã©cran et le cÃ´tÃ© droit - la largeur du vaisseau
+		self.rect.x = self.positionx
+		# On choisit une position y alÃ©atoire entre 100 pixels au dessus de l'Ã©cran et le haut de l'Ã©cran - la hauteur du vaisseau
+		self.rect.y = random.randrange(-100, 0 - self.rect.height)
+		# On donne une vitesse alÃ©atoire au vaisseau
+		self.speedY = random.randrange(2, 5)
 
 		self.randtimer = random.randint(100, 200)  # define the number of cycle to shot bullet on the player
 		self.timer = 0  # define the timer to 0
+
+		# Vague sinusoidale
+		self.amplitude = 32
+		self.frequence = 0.01
 
 	def shoot(self):
 		# on transmet la position du vaisseau au missile ainsi que sa vitesse
@@ -110,13 +119,14 @@ class ennemy(pygame.sprite.Sprite):
 		positionY = self.rect.top
 		missile = Missile(positionX, positionY, 1)
 		all_sprites.add(missile)
+		all_missile.add(missile)
 
 	def update(self):
 		pygame.sprite.Sprite.update(self)
 
 		# On bouge le vaisseau en fonction de la vitesse
 		self.rect.y += self.speedY
-
+		self.rect.x = self.positionx + math.sin(self.rect.y * self.frequence) * self.amplitude
 		# On empÃªche l'ennemy de sortir de l'Ã©cran
 		if self.rect.bottom > HEIGHT:
 			self.rect.top = 0  # remettre l'ennemy en haut
@@ -162,18 +172,31 @@ class Missile(pygame.sprite.Sprite):
 			self.kill()  # kill the bullet
 
 
+		if self.rect.bottom > HEIGHT:
+			self.kill()
+
+def AABBCollision(rectA, rectB):
+	if rectA.rect.right > rectB.rect.left and rectA.rect.left < rectB.rect.right and rectA.rect.bottom > rectB.rect.top and rectA.rect.top < rectB.rect.bottom:
+		return True
+	else:
+		return False
+
 pygame.init()
 pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))  # resolution of the screen
 pygame.display.set_caption("PyGame")  # name of the program
 clock = pygame.time.Clock()
 
-all_sprites = pygame.sprite.Group()  # define allsprites as a sprite group
+all_sprites = pygame.sprite.Group()
+all_enemies = pygame.sprite.Group()
+all_missile = pygame.sprite.Group()
+all_player = pygame.sprite.Group()
 
 #  display 10 ennemies on the screen
 for i in range(10):
 	ennemy1 = ennemy()
 	all_sprites.add(ennemy1)
+	all_enemies.add(ennemy1)
 
 # display the player (add into sprites)
 player = Player()
@@ -192,8 +215,26 @@ while running:
 			if event.key == pygame.K_SPACE:
 				player.shoot()
 
+
+
 	# Tous les sprites sont updatés
 	all_sprites.update()
+
+	for ennemy in all_enemies:
+		if AABBCollision(player, ennemy) == True:
+			player.kill()
+			running = False
+
+	for missile in all_missile:
+		if AABBCollision(player, missile) == True:
+			player.kill()
+			running = False
+
+	for missile in all_player:
+		for ennemy in all_enemies:
+			if AABBCollision(missile, ennemy) == True:
+				ennemy.kill()
+
 
 	screen.fill(BLACK)
 	all_sprites.draw(screen)
