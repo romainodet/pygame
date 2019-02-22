@@ -19,7 +19,10 @@
 #       Last edit by : rodet the 13/02/19 at 15:48
 
 from os import path
-import pygame, random, math
+
+import math
+import pygame
+import random
 
 assets_dir = path.join(path.dirname(__file__), 'assets')
 
@@ -171,15 +174,16 @@ class Missile(pygame.sprite.Sprite):
 		if self.rect.top < 0:  # if bullet is outside
 			self.kill()  # kill the bullet
 
-
 		if self.rect.bottom > HEIGHT:
 			self.kill()
+
 
 def AABBCollision(rectA, rectB):
 	if rectA.rect.right > rectB.rect.left and rectA.rect.left < rectB.rect.right and rectA.rect.bottom > rectB.rect.top and rectA.rect.top < rectB.rect.bottom:
 		return True
 	else:
 		return False
+
 
 pygame.init()
 pygame.mixer.init()
@@ -215,8 +219,6 @@ while running:
 			if event.key == pygame.K_SPACE:
 				player.shoot()
 
-
-
 	# Tous les sprites sont updatés
 	all_sprites.update()
 
@@ -234,7 +236,6 @@ while running:
 		for ennemy in all_enemies:
 			if AABBCollision(missile, ennemy) == True:
 				ennemy.kill()
-
 
 	screen.fill(BLACK)
 	all_sprites.draw(screen)
